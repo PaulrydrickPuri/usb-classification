@@ -1,12 +1,12 @@
-# USB Cable Classification
+# USB Classification — Unstripped/Stripped Bunch for Oil Palm Fruit
 
-> Binary classifier distinguishing **stripped** vs **unstripped** USB cable ends using ResNet34.
+> Binary classifier distinguishing **stripped** vs **unstripped** oil palm fresh fruit bunches (FFB) using ResNet34 / YOLOv8s-cls.
 
 ---
 
 ## Project Overview
 
-This project trains a ResNet34 image classifier to detect whether a USB cable has its wire ends stripped or unstripped. The model is deployed on a cloud training platform using COCO-format annotations split into 6 dataset partitions. The classification is used for automated quality inspection of USB cables during manufacturing.
+This project trains a binary image classifier to detect whether an oil palm fresh fruit bunch (FFB) has its fruitlets stripped from the spikelets (stripped) or still fully attached (unstripped). **USB stands for Unstripped/Stripped Bunch** — not electrical USB cables. The model is deployed on a cloud training platform using COCO-format annotations split into 6 dataset partitions. Classification is used for automated quality inspection during oil palm harvesting and processing.
 
 ---
 
@@ -17,6 +17,7 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 | 2026-04-14 | [dataset-eda-preprocessing-autolabel](sessions/2026-04-14_dataset-eda-preprocessing-autolabel.md) | Dataset EDA, black border removal + center square crop (1,141 images), 14 bad images removed, auto-label 6,060 new images at 0.90 confidence |
 | 2026-04-14 | [balanced-dataset-autolabel-packaging](sessions/2026-04-14_balanced-dataset-autolabel-packaging.md) | SAM hash linkage fix, 1:1 balanced dataset (1,219 per class), COCO format packaging with 80/10/10 split |
 | 2026-04-14 | [visionsamurai-config-yolov8s-classification](sessions/2026-04-14_visionsamurai-config-yolov8s-classification.md) | Full yolov8s-cls training config for VisionSamurai; SGD-only correction, sampler names, Blur/Dropout Min/Max/Prob |
+| 2026-04-14 | [project-identity-correction](sessions/2026-04-14_project-identity-correction.md) | Clarified USB = Unstripped/Stripped Bunch for Oil Palm Fruit — updated all project descriptions |
 
 ---
 
@@ -25,6 +26,7 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 | Item | Detail |
 |---|---|
 | Type | Image Classification (binary) |
+| Subject | Oil palm fresh fruit bunches (FFB) |
 | Total images (cleaned) | 26,979 (6 imbalanced partitions) + 2,438 (balanced partition) + 6,060 (unlabelled) |
 | Classes | 2 — `stripped`, `unstripped` |
 | Format | COCO (classification annotations) |
@@ -55,8 +57,8 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 
 | ID | Class | Notes |
 |---|---|---|
-| 0 | stripped | Wire ends stripped — majority class (~96.4%) |
-| 1 | unstripped | Wire ends intact — minority class (~3.6%) |
+| 0 | stripped | Fruitlets removed from spikelets — majority class (~96.4%) |
+| 1 | unstripped | Fruitlets still attached to spikelets — minority class (~3.6%) |
 
 ---
 
