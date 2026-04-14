@@ -16,6 +16,7 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 |---|---|---|
 | 2026-04-14 | [dataset-eda-preprocessing-autolabel](sessions/2026-04-14_dataset-eda-preprocessing-autolabel.md) | Dataset EDA, black border removal + center square crop (1,141 images), 14 bad images removed, auto-label 6,060 new images at 0.90 confidence |
 | 2026-04-14 | [balanced-dataset-autolabel-packaging](sessions/2026-04-14_balanced-dataset-autolabel-packaging.md) | SAM hash linkage fix, 1:1 balanced dataset (1,219 per class), COCO format packaging with 80/10/10 split |
+| 2026-04-14 | [visionsamurai-config-yolov8s-classification](sessions/2026-04-14_visionsamurai-config-yolov8s-classification.md) | Full yolov8s-cls training config for VisionSamurai; SGD-only correction, sampler names, Blur/Dropout Min/Max/Prob |
 
 ---
 
@@ -37,15 +38,16 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 
 | Item | Detail |
 |---|---|
-| Architecture | ResNet34 (current) → YOLOv8m (next) |
+| Architecture | ResNet34 (baseline) → **yolov8s-cls** (next run) |
 | Task | Binary Image Classification |
 | Input size | 640×640 |
 | Classes | stripped (0), unstripped (1) |
 | Best checkpoint (ResNet34) | Epoch 12 — val loss 0.013645 |
 | Test micro accuracy (ResNet34) | 99.59% |
-| Unstripped test recall (ResNet34) | 0.855 (target ≥ 0.93 after fix) |
-| Status | Balanced dataset ready — awaiting YOLOv8m training run |
+| Unstripped test recall (ResNet34) | 0.855 (target ≥ 0.93) |
+| Status | Config finalised — ready to launch yolov8s-cls training run |
 | Platform | VisionSamurai |
+| Note | yolov8m-cls not available on platform for classification — yolov8s-cls used |
 
 ---
 
@@ -105,12 +107,12 @@ confidence: 0.35       # improves unstripped recall from 0.855 → target ≥ 0.
 ---
 
 ## Next Steps
-- [ ] Train YOLOv8m (classification) on `(COCO)USB Classification(14Apr2026-12_57_31)(balanced)/`
-- [ ] Re-run `autolabel.py` on **raw (non-processed) unlabelled images** using the new YOLOv8m model
-- [ ] Human spot-check auto-labelled unstripped results before adding to training set
-- [ ] Verify YOLOv8m accepts COCO classification format on VisionSamurai (may need conversion)
-- [ ] Monitor whether balanced training closes the unstripped recall gap (target ≥ 0.93)
-- [ ] Collect more unstripped source images (only 1,219 unique images across all partitions)
+- [ ] Launch yolov8s-cls training run on VisionSamurai (config finalised — see latest session log)
+- [ ] Monitor train vs val loss for overfitting from 262 train duplicates (13.44%)
+- [ ] After training: re-run `autolabel.py` on **raw (non-processed) unlabelled images** using new model
+- [ ] Patch `package_balanced_coco.py` to enforce parent-level dedup (no two SAM crops of same parent in same split)
+- [ ] Evaluate whether yolov8s-cls hits unstripped recall target (≥ 0.93 vs ResNet34's 0.855)
+- [ ] Human spot-check auto-labelled unstripped results before adding to next training set
 
 ---
 
