@@ -15,6 +15,7 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 | Date | Session | What Was Done |
 |---|---|---|
 | 2026-04-14 | [dataset-eda-preprocessing-autolabel](sessions/2026-04-14_dataset-eda-preprocessing-autolabel.md) | Dataset EDA, black border removal + center square crop (1,141 images), 14 bad images removed, auto-label 6,060 new images at 0.90 confidence |
+| 2026-04-14 | [balanced-dataset-autolabel-packaging](sessions/2026-04-14_balanced-dataset-autolabel-packaging.md) | SAM hash linkage fix, 1:1 balanced dataset (1,219 per class), COCO format packaging with 80/10/10 split |
 
 ---
 
@@ -23,12 +24,12 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 | Item | Detail |
 |---|---|
 | Type | Image Classification (binary) |
-| Total images (cleaned) | 26,979 (training set) + 6,060 (unlabelled, auto-labelled at 0.90) |
+| Total images (cleaned) | 26,979 (6 imbalanced partitions) + 2,438 (balanced partition) + 6,060 (unlabelled) |
 | Classes | 2 — `stripped`, `unstripped` |
 | Format | COCO (classification annotations) |
-| Partitions | 6 partitions (pt1–pt6), each with train / val / test splits |
-| Class ratio (train) | ~19:1 stripped:unstripped |
-| Split (per partition) | ~3,068 train / 716 val / 712 test |
+| Partitions | 6 imbalanced (pt1–pt6) + 1 balanced (1:1 ratio) |
+| Class ratio — imbalanced | ~19:1 stripped:unstripped (~3,068 train / 716 val / 712 test per partition) |
+| Class ratio — balanced | 1:1 (975/975 train, 121/121 val, 123/123 test) |
 
 ---
 
@@ -36,15 +37,15 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 
 | Item | Detail |
 |---|---|
-| Architecture | ResNet34 |
+| Architecture | ResNet34 (current) → YOLOv8m (next) |
 | Task | Binary Image Classification |
 | Input size | 640×640 |
 | Classes | stripped (0), unstripped (1) |
-| Best checkpoint | Epoch 12 — val loss 0.013645 |
-| Test micro accuracy | 99.59% |
-| Unstripped test recall | 0.855 (target ≥ 0.93 after config fix) |
-| Status | Awaiting retrain with corrected config |
-| Platform | Cloud training platform (external) |
+| Best checkpoint (ResNet34) | Epoch 12 — val loss 0.013645 |
+| Test micro accuracy (ResNet34) | 99.59% |
+| Unstripped test recall (ResNet34) | 0.855 (target ≥ 0.93 after fix) |
+| Status | Balanced dataset ready — awaiting YOLOv8m training run |
+| Platform | VisionSamurai |
 
 ---
 
@@ -66,9 +67,13 @@ This project trains a ResNet34 image classifier to detect whether a USB cable ha
 | `model/hpo/hyp.yaml` | Training hyperparameters (sampler, lr, augmentation) |
 | `model/train/inference_config.yaml` | Inference confidence threshold |
 | `model/dataprep/crop_unstripped.py` | Black border removal + center square crop for original images |
-| `model/dataprep/autolabel.py` | High-confidence auto-labelling of new unlabelled images |
+| `model/dataprep/autolabel.py` | High-confidence auto-labelling of unlabelled images using best.pt |
+| `model/dataprep/balance_dataset.py` | Selects top-N stripped by resolution to match all unstripped |
+| `model/dataprep/package_balanced_coco.py` | Packages balanced pool into COCO partition format (80/10/10 split) |
 | `model/train/train-result/weights/best.pt` | Best ResNet34 checkpoint (epoch 12) |
 | `model/train/train-result/results.csv` | Per-epoch train/val loss and metrics |
+| `dataset/balanced/` | Flat balanced pool — 1,219 stripped + 1,219 unstripped |
+| `dataset/(COCO)…(balanced)/` | Balanced COCO partition — ready to upload to platform |
 | `dataset/labelled/autolabel_report.json` | Per-image auto-label results with confidence scores |
 
 ---
@@ -100,10 +105,12 @@ confidence: 0.35       # improves unstripped recall from 0.855 → target ≥ 0.
 ---
 
 ## Next Steps
-- [ ] Human review of auto-labelled unstripped images before adding to training set
-- [ ] Re-upload cleaned dataset to platform with corrected `hyp.yaml` and `inference_config.yaml`
-- [ ] Verify training script resolves `_sam_` crop filenames to parent annotation labels
-- [ ] Collect more unstripped source images (only 1,221 unique parents exist across all partitions)
+- [ ] Train YOLOv8m (classification) on `(COCO)USB Classification(14Apr2026-12_57_31)(balanced)/`
+- [ ] Re-run `autolabel.py` on **raw (non-processed) unlabelled images** using the new YOLOv8m model
+- [ ] Human spot-check auto-labelled unstripped results before adding to training set
+- [ ] Verify YOLOv8m accepts COCO classification format on VisionSamurai (may need conversion)
+- [ ] Monitor whether balanced training closes the unstripped recall gap (target ≥ 0.93)
+- [ ] Collect more unstripped source images (only 1,219 unique images across all partitions)
 
 ---
 
